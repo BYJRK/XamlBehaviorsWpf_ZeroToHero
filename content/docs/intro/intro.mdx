@@ -1,0 +1,17 @@
+---
+title: 基本概念
+---
+
+## 什么是行为？
+
+行为（Behaviors）是微软官方提供的一套 WPF 扩展库。它允许开发者在不修改控件的情况下，添加新的功能和行为。它们可以与 MVVM 模式很好地结合，使得代码更加清晰和易于维护。
+
+“行为库”并不是一个官方的叫法，而是笔者根据仓库及 NuGet 包的名称而起的。它的前身是 Blend SDK 中的行为库，后来被微软开源并重命名为 XamlBehaviorsWpf。
+
+我们现在仍然可以在 Blend 中看到它的身影：
+
+![可以在 Blend 的 Assets 中看到它](https://s2.loli.net/2025/04/17/kwy14htfpMCH5LT.png)
+
+<Callout type="info" title="提示">
+    行为库并不被 WPF 框架所包含，而是需要安装单独的 NuGet 包。但如果在 Blend 中尝试在一个未安装行为库的 WPF 项目中使用图中的资产，那么 Blend 会自动安装行为库的 NuGet 包。
+</Callout>
