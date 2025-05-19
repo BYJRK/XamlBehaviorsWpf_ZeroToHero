@@ -29,13 +29,57 @@ title: "ChangePropertyAction"
 </Window>
 ```
 
+它们所做的事情就好比在后台执行了下面的代码：
+
+```csharp
+window.WindowState = WindowState.Maximized;
+window.WindowState = WindowState.Minimized;
+```
+
+<Callout type="info">
+    这样的技巧在 MVVM 中是非常常见的。因为这里我们希望按钮的功能是操作界面，但视图模型中并不应该包含任何 UI 相关的逻辑，这会导致我们可能被迫要在视图的后台代码中实现一些 UI 相关的逻辑。借助触发器和动作，我们就可以将这些简单的逻辑在前台 XAML 代码中快速实现。
+</Callout>
+
 ## 错误案例
 
-虽然确实可以借助 `ChangePropertyAction` 来修改视图模型的某个属性，但通常我们并不会这样做，而是会分析我们要做的事情本质上是要实现什么功能，然后选择更合适的方式，比如借助属性绑定等来实现。
+虽然确实可以借助 `ChangePropertyAction` 来修改视图模型的某个属性，但通常我们并不会这样做，而是会分析要做的事情本质上是要实现什么功能，然后选择更合适的方式，比如借助属性绑定等来实现。
 
-一个经典的错误例子是，我们使用 `EventTrigger` 订阅一个 `CheckBox` 的 `Checked` 及 `Unchecked` 事件，然后在事件触发后使用 `ChangePropertyAction` 来修改视图模型的一个 `bool` 属性。实际上，我们可以直接将 `CheckBox` 的 `IsChecked` 属性绑定到视图模型的 `IsChecked` 属性上，这样就不需要使用 `ChangePropertyAction` 了。
+一个经典的错误例子是，使用 `EventTrigger` 订阅一个 `CheckBox` 的 `Checked` 及 `Unchecked` 事件，然后在事件触发后使用 `ChangePropertyAction` 来修改一个属性（比如另一个控件的 `Visibility`）。实际上，我们可以直接将 `CheckBox` 的 `IsChecked` 属性绑定到相应属性上（可能需要辅助以值转换器），这样就不需要使用 `ChangePropertyAction` 了。
 
-类似的错误例子还有对 `Expander`、`ComboBox` 等控件的一些操作。正确的做法是设法绑定它们的 `IsExpanded`、`SelectedItem` 等属性到视图模型的属性上。
+<Tabs items={['错误方式', '正确方式']}>
+  <Tab>
+    ```xml
+    <CheckBox>
+      <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Checked">
+          <i:ChangePropertyAction PropertyName="Visibility"
+                                  Value="Visible"
+                                  TargetObject="{Binding ElementName=button}" />
+        </i:EventTrigger>
+        <i:EventTrigger EventName="Unchecked">
+          <i:ChangePropertyAction PropertyName="Visibility"
+                                  Value="Collapsed"
+                                  TargetObject="{Binding}" />
+        </i:EventTrigger>
+      </i:Interaction.Triggers>
+    </CheckBox>
+
+    <Button x:Name="button" Content="Click Me" />
+    ```
+  </Tab>
+  <Tab>
+    ```xml
+    <CheckBox x:Name="check" />
+
+    <Button Content="Click Me"
+            Visibility="{Binding ElementName=check, 
+                                 Path=IsChecked,
+                                 Converter={StaticResource BooleanToVisibilityConverter}}" />
+    ```
+  </Tab>
+</Tabs>
+
+类似的错误例子还比如对 `Expander`、`ComboBox` 等控件的一些操作。正确的做法是设法绑定它们的 `IsExpanded`、`SelectedItem` 等属性到视图模型的属性上。
 
 ## 修改附加属性的值
 
