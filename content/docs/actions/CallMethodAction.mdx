@@ -1,0 +1,24 @@
+---
+title: "CallMethodAction"
+---
+
+这是一个相当简单易用的动作，它允许我们在事件触发器中调用一个方法。这个方法可以是任意一个对象的方法，比如 `Window` 的 `Close`，或视图模型（ViewModel）中的方法（但通常不推荐这样，而是建议使用 `InvokeCommandAction` 来绑定 VM 上的命令）。
+
+比如我们希望在点击一个按钮后，关闭当前窗口。那么可以这样实现：
+
+```xml
+<Window ElementName="window"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors">
+    <Button Content="Close" Width="100" Height="30">
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="Click">
+                <i:CallMethodAction MethodName="Close" TargetObject="{Binding ElementName=window}" />
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+    </Button>
+</Window>
+```
+
+<Callout type="warn" title="注意">
+    `CallMethodAction` 只能调用无参数的方法。如果希望调用有参数的方法，并且支持传递参数，那么需要自定义一个 `Action`。
+</Callout>

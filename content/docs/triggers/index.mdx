@@ -2,3 +2,20 @@
 title: 触发器（Triggers）
 ---
 
+触发器是行为库中一个相当重要且基本的概念。简单来说，它通常象征着某个条件的达成，比如事件触发，数据变化，或者定时器等。在达到条件后，触发器会执行相应的动作，也就是它内部的动作（Action）。
+
+行为库原生为我们提供的触发器有：
+
+- [EventTrigger](./eventtrigger.mdx)：事件触发
+- DataTrigger：数据触发
+- PropertyChangedTrigger：属性变化触发
+- KeyTrigger：键盘触发
+- TimerTrigger：定时器触发
+
+虽然内置触发器并不多，但是它们足以满足我们绝大部分的需求。当然，如果有需要，我们也可以开发自己的触发器。
+
+## 其他框架中的行为库
+
+在 Avalonia UI 的[行为库](https://github.com/wieslawsoltes/Avalonia.Xaml.Behaviors)中，触发器是作为特殊的行为存在的，比如 `EventTrigger` 变成了 `EventTriggerBehavior`。它们的使用方式是相同的，并且这样做也存在一定的道理：
+
+> 行为是一个更通用的概念，而触发器则是行为的一种特殊形式。触发器通常用于响应特定的事件或条件，而行为则可以用于实现更复杂的逻辑和交互。因此，将触发器视为一种特殊的行为是合理的。

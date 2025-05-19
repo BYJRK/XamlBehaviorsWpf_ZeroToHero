@@ -1,0 +1,44 @@
+---
+title: "ChangePropertyAction"
+---
+
+这是一个可以修改属性值的动作。当生效后，它会在后台借助反射的方式找到想要修改的属性，并为它赋新值。要操控的对象可以是一个控件，也可以是一个视图模型。
+
+## 基本用法
+
+我们可以借助这个动作实现对于窗口状态（最大化、最小化等）的操作，例如：
+
+```xml
+<Window x:Name="window">
+    <!-- 最大化按钮 -->
+    <Button Content="Maximize">
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="Click">
+                <i:ChangePropertyAction PropertyName="WindowState" Value="Maximized" TargetObject="{Binding ElementName=window}"/>
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+    </Button>
+    <!-- 最小化按钮 -->
+    <Button Content="Minimize">
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="Click">
+                <i:ChangePropertyAction PropertyName="WindowState" Value="Minimized" TargetObject="{Binding ElementName=window}"/>
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+    </Button>
+</Window>
+```
+
+## 错误案例
+
+虽然确实可以借助 `ChangePropertyAction` 来修改视图模型的某个属性，但通常我们并不会这样做，而是会分析我们要做的事情本质上是要实现什么功能，然后选择更合适的方式，比如借助属性绑定等来实现。
+
+一个经典的错误例子是，我们使用 `EventTrigger` 订阅一个 `CheckBox` 的 `Checked` 及 `Unchecked` 事件，然后在事件触发后使用 `ChangePropertyAction` 来修改视图模型的一个 `bool` 属性。实际上，我们可以直接将 `CheckBox` 的 `IsChecked` 属性绑定到视图模型的 `IsChecked` 属性上，这样就不需要使用 `ChangePropertyAction` 了。
+
+类似的错误例子还有对 `Expander`、`ComboBox` 等控件的一些操作。正确的做法是设法绑定它们的 `IsExpanded`、`SelectedItem` 等属性到视图模型的属性上。
+
+## 修改附加属性的值
+
+原生的 `ChangePropertyAction` 只能修改依赖属性的值，但我们也可以自定义一个 `ChangeAttachedPropertyAction` 来修改附加属性的值。这里有一个简单的实现：
+
+<Card title="GitHub Gist - ChangeAttachedPropertyAction.cs" href="https://gist.github.com/BYJRK/1220906e7c4b6cb863ec6d204abcb2a6" />

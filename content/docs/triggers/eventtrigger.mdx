@@ -1,0 +1,87 @@
+---
+title: "EventTrigger"
+---
+
+这个触发器顾名思义，就是在某个事件被触发时，执行后续的一些动作。它的使用方式与 WPF 原生的 `EventTrigger` 非常相似，比如都可以指定事件的名称，以及目标对象等。但它与 WPF 原生的 `EventTrigger` 也有一些不同之处，比如它支持在 `Style` 中使用，而且执行的动作不局限于操作 `Storyboard` 等。
+
+首先我们来简单回顾一下 WPF 原生的 `EventTrigger` 的使用方式。比如我们希望一个按钮在鼠标置于上面时，改变它的背景颜色，我们可以这样做：
+
+```xml
+<Window.Resources>
+    <Style x:Key="ButtonStyle" TargetType="Button">
+        <Style.Triggers>
+            <EventTrigger RoutedEvent="MouseEnter">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)"
+                                        To="Red" Duration="0" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+            <EventTrigger RoutedEvent="MouseLeave">
+                <BeginStoryboard>
+                    <Storyboard>
+                        <ColorAnimation Storyboard.TargetProperty="(Button.Background).(SolidColorBrush.Color)"
+                                        To="Transparent" Duration="0" />
+                    </Storyboard>
+                </BeginStoryboard>
+            </EventTrigger>
+        </Style.Triggers>
+    </Style>
+
+<Button Content="Click Me" Style="{StaticResource ButtonStyle}">
+```
+
+<Callout type="info" title="提示">
+    原生的 `EventTrigger` 只能在 `Style.Triggers` 中使用，且内部只能是 `BeginStoryboard`。如果希望瞬间改变背景颜色，通常有这么几种方式：
+    
+    1. 将 `Duration` 设置为 `0`
+    2. 自定义一个 `TriggerAction`，实现类似 `Setter` 的功能（[参考](https://stackoverflow.com/questions/942548/setting-a-property-with-an-eventtrigger)）
+    3. 改为使用 `Trigger`，`Property="IsMouseOver"`，`Value="True"`
+</Callout>
+
+接下来我们看一看用行为库的 `EventTrigger` 如何实现同样的功能：
+
+```xml
+<Window ...
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors">
+    
+    <Button Content="Click Me">
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="MouseEnter">
+                <i:ChangePropertyAction PropertyName="Background" Value="Red" />
+            </i:EventTrigger>
+            <i:EventTrigger EventName="MouseLeave">
+                <i:ChangePropertyAction PropertyName="Background" Value="Transparent" />
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+    </Button>
+</Window>
+```
+
+这样就可以实现效果了。当然，如果同样想操作 `Storyboard`，只需要修改内部的 `Action` 即可：
+
+```xml
+<Window ...
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors">
+    <Window.Resources>
+        <Storyboard x:Key="MouseEnterStoryboard">
+            <!-- ... -->
+        </Storyboard>
+        <Storyboard x:Key="MouseLeaveStoryboard">
+            <!-- ... -->
+        </Storyboard>
+    </Window.Resources>
+    
+    <Button Content="Click Me">
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="MouseEnter">
+                <i:BeginStoryboardAction Storyboard="{StaticResource MouseEnterStoryboard}" />
+            </i:EventTrigger>
+            <i:EventTrigger EventName="MouseLeave">
+                <i:BeginStoryboardAction Storyboard="{StaticResource MouseLeaveStoryboard}" />
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+    </Button>
+</Window>
+```
