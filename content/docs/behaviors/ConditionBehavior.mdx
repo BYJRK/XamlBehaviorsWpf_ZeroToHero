@@ -1,0 +1,41 @@
+---
+title: "ConditionBehavior"
+---
+
+这是一个非常特殊的行为，虽然行为都被放在 `<i:Interaction.Behaviors>` 中，但一般的行为会直接添加到控件上，而这个行为是放在触发器中的，与其他动作在一起。
+
+它起作用的方式与触发器本身的原理有关。当触发器被触发时，如果它内部有多个动作，那么这些动作会依次执行。如果有一个抛出异常，则后面的动作不会执行。`ConditionBehavior` 在这里就扮演了一个特殊的“动作”，它允许你在触发器中任意一个位置添加一个条件。如果条件不成立，则后面的动作不会执行。
+
+比如我们给一个按钮添加了一个 `Click` 触发器，并且希望在触发时能够有额外的条件判断，那么可以这样实现：
+
+```xml
+<Button Content="Button">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Click">
+            <!-- 添加条件 -->
+            <i:Interaction.Behaviors>
+                <i:ConditionBehavior>
+                    <i:ConditionalExpression ForwardChaining="And">
+                        <i:ComparisonCondition
+                            LeftOperand="{Binding ElementName=checkbox, Path=IsChecked}"
+                            Operator="Equal"
+                            RightOperand="True" />
+                    </i:ConditionalExpression>
+                </i:ConditionBehavior>
+            </i:Interaction.Behaviors>
+            <!-- 条件满足才会调用动作 -->
+            <i:ChangePropertyAction
+                PropertyName="WindowState"
+                TargetObject="{Binding ElementName=window}"
+                Value="{x:Static WindowState.Minimized}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+</Button>
+```
+
+这里有几个值得注意的点：
+
+1. 条件放在一个 `i:ConditionBehavior` 内部的 `i:ConditionalExpression` 里，看起来嵌套了好几层
+2. `i:ConditionalExpression` 的 `ForwardChaining` 属性决定了条件的连接方式，`And` 表示与，`Or` 表示或（默认是与）；同时这也意味着，这里可以写多个条件
+3. `i:ComparisonCondition` 是一个条件，它的 `LeftOperand` 和 `RightOperand` 是用来比较的左值和右值，而 `Operator` 属性决定了它们之间的关系（默认为 `Equal`，其他还有 `GreaterThan`、`LessThan`、`GreaterThanOrEqual`、`LessThanOrEqual`、`NotEqual` 等）
+4. `ComparisonCondition` 是行为库提供的唯一一个条件，其他的条件需要自己实现
