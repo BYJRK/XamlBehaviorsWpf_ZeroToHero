@@ -26,6 +26,33 @@ public ICommand LoadDataCommand { get; }
     在 WPF 的行为库中，`InvokeCommandAction` 默认的 `EventName` 是 `Loaded`，因此在上面的例子中，完全可以省略掉 `EventName` 属性（前提是不会引入不必要的歧义或理解障碍）。
 </Callout>
 
+## 传递事件的参数
+
+因为大多数情况下，`InvokeCommandAction` 都会搭配 `EventTrigger` 使用，而有些时候，这个事件的参数（即 `EventArgs`）又是我们希望关注的（比如 `KeyDown` 事件触发时，希望知道按下了哪个键）。那么我们就可以将这个参数传给要调用的 `ICommand`。具体来说，我们可以借助 `PassEventArgsToCommand` 属性（默认为假）来实现这个功能。例如：
+
+```xml
+<Window>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="KeyDown">
+            <i:InvokeCommandAction Command="{Binding KeyDownCommand}" 
+                                   PassEventArgsToCommand="True" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+</Window>
+```
+
+然后 `KeyDown` 事件的参数就会作为 `CommandParameter` 传递给 `KeyDownCommand`。进而我们就可以在后台代码中获取并分析这个参数了。
+
+<Callout type="warn">
+    需要注意的是，虽然这样做非常方便，**但严格意义上说，这是违背 MVVM 的**，因为我们在 VM 中引入了 UI 相关的内容。或许我们只是单纯从 `KeyEventArgs` 之类的事件参数中获取想要的部分（比如按下了哪个键），但是这些 `RoutedEventArgs` 会包含一些 UI 相关的内容，比如 `Source`、`OriginalSource` 等等。我们完全有机会从这上面获取到实际的控件。
+</Callout>
+
+## 事件参数转换器
+
+上面提到，直接传递事件参数给 VM 中的命令可能会违背 MVVM，但是我们又非常想知道事件参数的内容。这个时候，我们可以借助 `EventArgsConverter` 来实现。它的用法与传统的绑定表达式中使用 `Converter` 类似，因此这里不再举例。
+
+借助这个技巧，我们就可以巧妙地将不应该让 VM 接触到的内容（比如控件的引用，甚至整个 `Key` 对象都是 WPF 框架的，我们可以考虑将它包装为平台无关的类型）给隐藏起来。此外，这个动作还提供了 `EventArgsConverterParameter` 属性，允许我们传递一个参数给转换器。这在某些情况下也是用得上的。
+
 ## 扩展学习
 
 “在加载后执行一个动作”这样的需求是相当常见的。那么如果没有行为库，我们该怎么办呢？因为我们归根结底是在和 WPF 的事件系统打交道，所以我们注定是绕不开事件注册的。所以传统方式下我们可以这样实现：
