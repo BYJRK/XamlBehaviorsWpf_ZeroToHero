@@ -1,3 +1,52 @@
 ---
 title: "InvokeCommandAction"
 ---
+
+顾名思义，这个动作的效果就是执行一个命令（`ICommand`）。乍一看似乎没有多大的必要，因为诸如 `Button` 之类的控件本身就可以绑定 `Command` 属性。但是在实际的开发中，我们经常需要去绑定一些事件，比如 `Loaded`、`MouseEnter`、`SelectionChanged` 等等。这些事件所属的控件并没有提供一个让我们直接去绑定的类似 `Command` 的属性。这时候，`InvokeCommandAction` 就可以派上用场了。
+
+比如我们在 VM 上有一个加载数据的指令：
+
+```csharp
+public ICommand LoadDataCommand { get; }
+```
+
+并且我们希望在窗口加载完成后就自动执行这个指令。那么我们可以在 XAML 中这样写：
+
+```xml
+<Window ...>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <i:InvokeCommandAction Command="{Binding LoadDataCommand}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+</Window>
+```
+
+<Callout type="info">
+    在 WPF 的行为库中，`InvokeCommandAction` 默认的 `EventName` 是 `Loaded`，因此在上面的例子中，完全可以省略掉 `EventName` 属性（前提是不会引入不必要的歧义或理解障碍）。
+</Callout>
+
+## 扩展学习
+
+“在加载后执行一个动作”这样的需求是相当常见的。那么如果没有行为库，我们该怎么办呢？因为我们归根结底是在和 WPF 的事件系统打交道，所以我们注定是绕不开事件注册的。所以传统方式下我们可以这样实现：
+
+```csharp
+public partial class MainWindow : Window
+{
+    public MainWindow()
+    {
+        InitializeComponent();
+
+        ViewModel = viewModel;
+        DataContext = new MainViewModel(); // 也可以在构造中传入，便于使用 DI 容器
+
+        Loaded += OnLoaded; // 当然也可以在 XAML 中注册事件
+    }
+
+    private void OnLoaded(object sender, RoutedEventArgs e)
+    {
+        var viewModel = DataContext as MainViewModel;
+        viewModel?.LoadDataCommand.Execute(null);
+    }
+}
+```
