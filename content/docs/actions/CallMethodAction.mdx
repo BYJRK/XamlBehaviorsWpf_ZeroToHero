@@ -19,6 +19,83 @@ title: "CallMethodAction"
 </Window>
 ```
 
-<Callout type="warn" title="注意">
-    `CallMethodAction` 只能调用无参数的方法。如果希望调用有参数的方法，并且支持传递参数，那么需要自定义一个 `Action`。
-</Callout>
+值得注意的是，内置的 `CallMethodAction` 只能调用无参数的方法。如果希望调用有参数的方法，并且支持传递参数，那么需要自定义一个 `Action`。这里有一个简单的实现：
+
+```csharp
+using System.Windows;
+using Microsoft.Xaml.Behaviors;
+
+public class CallMethodAction : TriggerAction<DependencyObject>
+{
+    public static readonly DependencyProperty TargetObjectProperty = DependencyProperty.Register(
+        nameof(TargetObject),
+        typeof(object),
+        typeof(CallMethodAction),
+        new PropertyMetadata(null)
+    );
+
+    public static readonly DependencyProperty MethodNameProperty = DependencyProperty.Register(
+        nameof(MethodName),
+        typeof(string),
+        typeof(CallMethodAction),
+        new PropertyMetadata(null)
+    );
+
+    public static readonly DependencyProperty ParameterProperty = DependencyProperty.Register(
+        nameof(Parameter),
+        typeof(object),
+        typeof(CallMethodAction),
+        new PropertyMetadata(null)
+    );
+
+    public object? TargetObject
+    {
+        get => GetValue(TargetObjectProperty);
+        set => SetValue(TargetObjectProperty, value);
+    }
+
+    public string? MethodName
+    {
+        get => (string?)GetValue(MethodNameProperty);
+        set => SetValue(MethodNameProperty, value);
+    }
+
+    public object? Parameter
+    {
+        get => GetValue(ParameterProperty);
+        set => SetValue(ParameterProperty, value);
+    }
+
+    protected override void Invoke(object parameter)
+    {
+        var target = TargetObject ?? AssociatedObject;
+        if (target == null || string.IsNullOrEmpty(MethodName))
+            return;
+
+        var type = target.GetType();
+        var method =
+            type.GetMethod(MethodName, new[] { Parameter?.GetType() ?? typeof(object) })
+            ?? type.GetMethod(MethodName, new[] { typeof(object) })
+            ?? type.GetMethod(MethodName, Type.EmptyTypes);
+
+        if (method == null)
+            return;
+
+        var parameters = method.GetParameters();
+        if (parameters.Length == 0)
+        {
+            method.Invoke(target, null);
+        }
+        else if (parameters.Length == 1)
+        {
+            method.Invoke(target, new[] { Parameter });
+        }
+    }
+}
+```
+
+这个自定义的 `CallMethodAction` 支持传递一个参数给目标方法（方法的入参类型必须为 `object`）。
+
+此外，一些对于原生行为库的扩展的第三方库也提供了类似的实现，比如：
+
+- Livet: [LivetCallMethodAction](https://github.com/runceel/Livet/blob/master/LivetCask.Behaviors/LivetCallMethodAction.cs)
