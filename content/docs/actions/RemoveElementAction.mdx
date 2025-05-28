@@ -1,0 +1,31 @@
+---
+title: RemoveElementAction
+---
+
+这是一个相当好理解的动作。它唯一的功能就是将一个控件从它的父元素中移除。父元素可以是一个 `ContentControl`（或它的子类），也可以是一个 `Panel`（如 `StackPanel`、`Grid` 等）。如果父元素是一个 `ContentControl`，那么它会将控件从 `Content` 属性中移除；如果是一个 `Panel`，则会将控件从其子元素集合中移除。
+
+我们可以用 `TargetName` 或 `TargetObject` 的方式来指定要移除的控件。如果不指明，则会删除当前动作所在的控件自身。
+
+```xml
+<StackPanel Orientation="Horizontal">
+    <Button Content="移除自身">
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="Click">
+                <i:RemoveElementAction />
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+    </Button>
+
+    <ContentControl>
+        <Button x:Name="ToBeRemoved" Content="将被移除" />
+    </ContentControl>
+
+    <Button Content="移除左边">
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="Click">
+                <i:RemoveElementAction TargetName="ToBeRemoved" />
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+    </Button>
+</StackPanel>
+```
