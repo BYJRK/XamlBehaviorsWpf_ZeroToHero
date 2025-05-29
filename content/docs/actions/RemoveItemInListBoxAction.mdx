@@ -1,0 +1,52 @@
+---
+title: "RemoveItemInListBoxAction"
+---
+
+源代码：[PrototypingActions.cs](https://github.com/microsoft/XamlBehaviorsWpf/blob/main/src/Microsoft.Xaml.Behaviors/Core/PrototypingActions.cs#L307)
+
+这是一个相对简单的动作，它甚至没有自己单独的代码文件，而是和其他几个动作一同放在了 `PrototypingActions.cs` 中。
+它的作用简单来说是从 `ListBox` 中移除一个选中的项，但通过分析源代码，我们发现它的实际运作原理不太能用一句话来概括。
+
+首先，它的确可以用来删除 `ListBox` 中的一个项，但是它并没有提供类似 [RemoveElementAction](./RemoveElementAction) 的 `TargetObject` 或 `TargetName` 等属性来指定要删除的项。所以我们基本上只能这样用：
+
+```xml
+<ListBox x:Name="listBox">
+    <ListBoxItem>
+        <StackPanel>
+            <TextBlock Text="Item 1" />
+            <Button Content="Remove">
+                <i:Interaction.Triggers>
+                    <i:EventTrigger EventName="Click">
+                        <i:RemoveItemInListBoxAction />
+                    </i:EventTrigger>
+                </i:Interaction.Triggers>
+            </Button>
+        </StackPanel>
+    </ListBoxItem>
+</ListBox>
+```
+
+此时在点击按钮后，这个动作会向上寻找到第一个 `ListBoxItem`，并将它从所在的 `ListBox` 中移除。
+
+除此之外，它还支持另外一种用法，也就是我们在遵循 MVVM 模式时常用的方式，即为 `ListBox` 绑定一个列表类。在这种情况下，我们可以在 `DataTemplate` 中使用这个动作：
+
+```xml
+<ListBox ItemsSource="{Binding Items}">
+    <ListBox.ItemTemplate>
+        <DataTemplate>
+            <StackPanel>
+                <TextBlock Text="{Binding}" />
+                <Button Content="Remove">
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="Click">
+                            <i:RemoveItemInListBoxAction />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                </Button>
+            </StackPanel>
+        </DataTemplate>
+    </ListBox.ItemTemplate>
+</ListBox>
+```
+
+此时，该动作会查找自己的 `DataContext`，并尝试从 `ItemsSource` 中移除当前项。
