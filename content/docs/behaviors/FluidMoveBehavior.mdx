@@ -1,0 +1,46 @@
+---
+title: "FluidMoveBehavior"
+---
+
+顾名思义，这个行为的作为是为控件带来平滑移动的效果。具体来说，它可以被添加到一个 `Panel` 控件（比如 `StackPanel` 等）上，进而在它内部的子控件发生位置变化时，提供平滑的过渡效果。
+
+我们可以通过一个简单的例子观察它的效果。在下面的例子中，我们使用了用于移除自身的 [`RemoveElementAction`](../actions/RemoveElementAction) 动作。
+
+```xml
+<StackPanel>
+    <i:Interaction.Behaviors>
+        <i:FluidMoveBehavior />
+    </i:Interaction.Behaviors>
+
+    <Button Content="删除我">
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="Click">
+                <i:RemoveElementAction />
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+    </Button>
+
+    <Button Content="我将移动" />
+</StackPanel>
+```
+
+我们当然也可以将它用在诸如 `ListBox` 这样的控件上，从而实现添加或删除子项目时发生漂亮的移动效果（尤其是在遵循 MVVM 模式时）。但需要注意的是，这个行为默认只能被添加到 `Panel` 控件上，因此如果直接添加到 `ListBox` 上，它将不会起作用。要使其生效，我们需要将其添加到 `ListBox.ItemsPanel` 中。
+
+```xml
+<ListBox ItemsSource="{Binding Items}">
+    <ListBox.ItemsPanel>
+        <ItemsPanelTemplate>
+            <StackPanel>
+                <i:Interaction.Behaviors>
+                    <i:FluidMoveBehavior />
+                </i:Interaction.Behaviors>
+            </StackPanel>
+        </ItemsPanelTemplate>
+    </ListBox.ItemsPanel>
+</ListBox>
+```
+
+<Callout type="warn">
+    注意：`FluidMoveBehavior` 需要在 `ItemsPanelTemplate` 中使用，而不是直接添加到 `ListBox` 上。
+上面只是一个简单的例子。请注意，上面的方式将会破坏 `ListBox` 的虚拟化特性，因此在实际应用中，如果我们需要在 `ListBox` 中使用虚拟化，可以考虑使用 `VirtualizingStackPanel` 作为 `ItemsPanelTemplate`。
+</Callout>
