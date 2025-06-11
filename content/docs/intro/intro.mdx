@@ -15,3 +15,95 @@ title: 基本概念
 <Callout type="info" title="提示">
     行为库并不被 WPF 框架所包含，而是需要安装单独的 NuGet 包。但如果在 Blend 中尝试在一个未安装行为库的 WPF 项目中使用图中的资产，那么 Blend 会自动安装行为库的 NuGet 包。
 </Callout>
+
+## 为什么需要用行为库？
+
+我们使用行为库主要有以下几个原因：
+
+1. 一些方便好用的功能手动实现起来并不容易，而借助行为库就可以轻松便捷地为控件添加这些功能
+2. 行为库的功能几乎涵盖了 WPF 开发的方方面面，包括数据源、依赖属性、命令、方法调用、动画、样式等等，绝对可以说是对于 WPF 开发过程的一个极大的补充
+3. 在遵循 MVVM 模式进行开发时，经常会发现有一些无法直接通过绑定来实现的功能，而行为库可以帮助我们解决这些问题
+
+这里，我针对上面的几种情况简单给出一些例子，方便大家理解。
+
+### 为控件添加拖动功能
+
+如果我们想给一个 `Canvas` 中的 `Rectangle` 添加拖动功能，使用行为库可以非常简单地实现：
+
+```xml
+<Canvas>
+    <Rectangle Width="100" Height="100" Fill="Red">
+        <i:Interaction.Behaviors>
+            <i:MouseDragElementBehavior />
+        </i:Interaction.Behaviors>
+    </Rectangle>
+</Canvas>
+```
+
+这个行为是行为库自带的，它借助 `RenderTransform` 属性来实现拖动功能。借助它，原本我们需要注册事件，并在后台代码中处理拖动逻辑的工作，现在只需要在 XAML 中添加一个行为即可。
+
+### 按下按钮后操控一个动画效果
+
+如果我们想在按下一个按钮后操控一个动画效果，使用行为库可以这样实现：
+
+```xml
+<Window.Resources>
+    <Storyboard x:Key="MyStoryboard">
+        <DoubleAnimation Storyboard.TargetName="MyRectangle"
+                         Storyboard.TargetProperty="Width"
+                         From="100" To="200" Duration="0:0:1" />
+    </Storyboard>
+</Window.Resources>
+
+<Canvas>
+    <Rectangle x:Name="MyRectangle" Width="100" Height="100" Fill="Red" />
+</Canvas>
+
+<Button Content="Start Animation">
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Click">
+            <b:BeginStoryboard Storyboard="{StaticResource MyStoryboard}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+</Button>
+```
+
+可以看到，借助行为，我们甚至做到了一行后台 C# 代码都不用写，就实现了这个功能。
+
+### 当某些事件触发时执行命令
+
+我们都知道，对于按钮，我们可以绑定它的 `Command` 属性到 VM 中的一个 `ICommand` 对象上，从而实现点击按钮时执行命令的功能。但如果现在我们想要实现的功能是，当一个窗口触发了 `Loaded` 事件，或一个 `Border` 触发了 `MouseOver` 事件，又或者一个 `ListBox` 触发了 `SelectionChanged` 事件时去执行命令，该如何实现呢？
+
+这些在原生 WPF 中经常让我们感到头疼的功能，借助行为可以非常简单地实现：
+
+```xml
+<Window>
+    <i:Interaction.Triggers>
+        <i:EventTrigger EventName="Loaded">
+            <b:InvokeCommandAction Command="{Binding MyCommand1}" />
+        </i:EventTrigger>
+    </i:Interaction.Triggers>
+
+    <Border>
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="MouseEnter">
+                <b:InvokeCommandAction Command="{Binding MyCommand2}" />
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+    </Border>
+
+    <ListBox>
+        <i:Interaction.Triggers>
+            <i:EventTrigger EventName="SelectionChanged">
+                <b:InvokeCommandAction Command="{Binding MyCommand3}" />
+            </i:EventTrigger>
+        </i:Interaction.Triggers>
+    </ListBox>
+</Window>
+```
+
+可以看到，借助行为，我们可以非常简单地将事件与命令绑定起来，而不需要编写任何后台代码。
+
+---
+
+相信通过上面的例子，大家已经对行为库有了一个初步的了解，也明白了它在我们的开发中可以发挥的作用。
