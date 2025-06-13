@@ -24,7 +24,7 @@ title: 基本概念
 2. 行为库的功能几乎涵盖了 WPF 开发的方方面面，包括数据源、依赖属性、命令、方法调用、动画、样式等等，绝对可以说是对于 WPF 开发过程的一个极大的补充
 3. 在遵循 MVVM 模式进行开发时，经常会发现有一些无法直接通过绑定来实现的功能，而行为库可以帮助我们解决这些问题
 
-这里，我针对上面的几种情况简单给出一些例子，方便大家理解。
+针对上面的几种情况，这里有一些例子，方便大家理解。
 
 ### 为控件添加拖动功能
 
@@ -80,14 +80,14 @@ title: 基本概念
 <Window>
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="Loaded">
-            <b:InvokeCommandAction Command="{Binding MyCommand1}" />
+            <i:InvokeCommandAction Command="{Binding MyCommand1}" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
 
     <Border>
         <i:Interaction.Triggers>
             <i:EventTrigger EventName="MouseEnter">
-                <b:InvokeCommandAction Command="{Binding MyCommand2}" />
+                <i:InvokeCommandAction Command="{Binding MyCommand2}" />
             </i:EventTrigger>
         </i:Interaction.Triggers>
     </Border>
@@ -95,7 +95,7 @@ title: 基本概念
     <ListBox>
         <i:Interaction.Triggers>
             <i:EventTrigger EventName="SelectionChanged">
-                <b:InvokeCommandAction Command="{Binding MyCommand3}" />
+                <i:InvokeCommandAction Command="{Binding MyCommand3}" />
             </i:EventTrigger>
         </i:Interaction.Triggers>
     </ListBox>
