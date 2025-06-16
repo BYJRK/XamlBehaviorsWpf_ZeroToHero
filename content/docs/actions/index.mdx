@@ -2,3 +2,37 @@
 title: 动作（Actions）
 ---
 
+动作是行为库中的相当重要的一部分。它通常出现在触发器中，表示满足某个条件时，执行某个或某些操作。
+
+行为库为我们提供了许多常用的动作，足够应对绝大多数需求。如有需要，我们也可以实现自定义动作，从而满足特定的需求。
+
+## 内置动作
+
+行为库内置了许多实用的动作：
+
+- [CallMethodAction](./CallMethodAction.mdx)
+- [InvokeCommandAction](./InvokeCommandAction.mdx)
+- [ChangePropertyAction](./ChangePropertyAction.mdx)
+- PlaySoundAction
+- ControlStoryboardAction
+- GoToStateAction
+- [RemoveElementAction](./RemoveElementAction.mdx)
+- [RemoveItemInListBoxAction](./RemoveItemInListBoxAction.mdx)
+- LaunchUriOrFileAction
+
+## 共有功能
+
+尽管不同的动作包含不同的逻辑及用于配置或绑定的属性，每个动作都继承自同一个基类（`TriggerAction`），所以它们拥有一个相同的功能：`IsEnabled`。这是一个依赖属性，我们可以将它绑定到一个布尔值，从而实现对它是否生效的更精细的控制。
+
+```xml
+<Button>
+    <i:Interaction.Triggers>
+        <i:InvokeCommandAction Command="{Binding MyCommand}" IsEnabled="{Binding IsActionEnabled}" />
+    </i:Interaction.Triggers>
+</Button>
+```
+
+我们也可以通过一些方式在后台代码中获取这个动作，进而操作它的这个属性。常见的方式有：
+
+- 为该动作添加一个 `x:Name`，然后在代码中通过该名称获取；
+- 在后台代码中借助 `Interaction.GetTriggers(obj)` 获得触发器，进而访问它的 `Actions` 属性获取动作集合。
