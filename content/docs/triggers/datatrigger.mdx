@@ -1,0 +1,71 @@
+---
+title: "DataTrigger"
+---
+
+这个触发器允许我们基于数据的变化来改变属性值。我们可以将它绑定到（或者理解为让它观察）某个依赖属性，或者视图模型中的某个具有通知功能的属性上。这样当属性值变化时，触发器就会生效。
+
+## WPF 自带的 DataTrigger
+
+首先我们快速回忆一下 WPF 自带的 `DataTrigger` 的使用方式。假设我们有一个视图模型 `MyViewModel`，它有一个布尔属性 `IsActive`，我们希望当这个属性为 `True` 时，按钮的背景颜色变为绿色，否则为红色。我们可以这样做：
+
+```xml
+<Button>
+  <Button.Style>
+    <Style TargetType="Button">
+      <Setter Property="Background" Value="Red"/>
+      <Style.Triggers>
+        <DataTrigger Binding="{Binding IsActive}" Value="True">
+          <Setter Property="Background" Value="Green"/>
+        </DataTrigger>
+      </Style.Triggers>
+    </Style>
+  </Button.Style>
+</Button>
+```
+
+<Callout type="info" title="提示">
+    除了 `Style` 和 `Template`，控件本身也包含一个 `Triggers` 集合。但是控件的只能包含 `EventTrigger`，不能包含 `Trigger`、`DataTrigger` 等。
+</Callout>
+
+## 行为库的 DataTrigger
+
+现在我们来看一下行为库的 `DataTrigger`。下面是一个简单的例子，目的是实现与上面类似的功能：
+
+```xml
+<Button Content="Click Me">
+    <i:Interaction.Triggers>
+        <i:DataTrigger Binding="{Binding IsActive}" Value="True">
+            <i:ChangePropertyAction PropertyName="Background" Value="Green" />
+        </i:DataTrigger>
+        <i:DataTrigger Binding="{Binding IsActive}" Value="False">
+            <i:ChangePropertyAction PropertyName="Background" Value="Red" />
+        </i:DataTrigger>
+    </i:Interaction.Triggers>
+</Button>
+```
+
+乍一看会觉得它与 WPF 自带的 `DataTrigger` 没有什么区别，但实际上区别还是有的：
+
+1. 行为库的 `DataTrigger` 只能放在 `Interaction.Triggers` 中，而不能放在 `Style` 或 `Template` 中。它与 WPF 原生的 `DataTrigger` 完全是两回事，只不过名字相同。
+2. 行为库的 `DataTrigger` 所实现的效果是“生硬”的，也就是它在条件满足时，会采用类似于在后台代码中直接修改控件属性值的方式来实现效果，但这是有代价的：这样的修改拥有极高的优先级，会轻易覆盖掉来自 `Style`、`Template` 等的设置。
+3. 行为库的 `DataTrigger` 在满足条件并触发动作后，即便后续条件不再满足，之前的动作也不会被撤销。也就是说，`DataTrigger` 只会在条件满足时执行一次动作，而不会在条件不满足时执行相反的动作。因此在上面的例子中我们需要写一对 `DataTrigger` 来分别处理 `True` 和 `False` 的情况，从而让效果变得可逆；WPF 自带的 `DataTrigger` 则不需要这样做，因为它会自动处理条件不满足时的情况。
+4. 行为库的 `DataTrigger` 除了除了与 WPF 原生的提供了相同到 `Binding` 和 `Value` 属性外，还额外提供了 `Comparison` 属性，允许我们指定更多的比较方式，比如 `NotEqual`、`GreaterThan`、`LessThan` 等等，从而让触发条件变得更加灵活。
+
+基于上面的第 4 条，我们可以将上面例子中的第二个 `DataTrigger` 改为使用 `NotEqual`，从而简化代码：
+
+```xml
+<Button Content="Click Me">
+    <i:Interaction.Triggers>
+        <i:DataTrigger Binding="{Binding IsActive}" Value="True">
+            <i:ChangePropertyAction PropertyName="Background" Value="Green" />
+        </i:DataTrigger>
+        <i:DataTrigger Binding="{Binding IsActive}" Value="True" Comparison="NotEqual">
+            <i:ChangePropertyAction PropertyName="Background" Value="Red" />
+        </i:DataTrigger>
+    </i:Interaction.Triggers>
+</Button>
+```
+
+<Callout type="info" title="提示">
+    或许对于 `True`、`False` 这种天然拥有互斥关系的值来说，使用 `NotEqual` 并没有太大意义；但对于其他类型的值来说，`NotEqual` 就显得非常有用了。比如我们想判断某个属性与 `null` 的关系，那么在没有 `NotEqual` 的情况下，可能就会比较无力了。
+</Callout>
