@@ -4,6 +4,8 @@ title: "EventTrigger"
 
 这个触发器顾名思义，就是在某个事件被触发时，执行后续的一些动作。它的使用方式与 WPF 原生的 `EventTrigger` 非常相似，比如都可以指定事件的名称，以及目标对象等。但它与 WPF 原生的 `EventTrigger` 也有一些不同之处，比如它支持在 `Style` 中使用，而且执行的动作不局限于操作 `Storyboard` 等。
 
+## WPF 原生的 EventTrigger
+
 首先我们来简单回顾一下 WPF 原生的 `EventTrigger` 的使用方式。比如我们希望一个按钮在鼠标置于上面时，改变它的背景颜色，我们可以这样做：
 
 ```xml
@@ -39,6 +41,8 @@ title: "EventTrigger"
     2. 自定义一个 `TriggerAction`，实现类似 `Setter` 的功能（[参考](https://stackoverflow.com/questions/942548/setting-a-property-with-an-eventtrigger)）
     3. 改为使用 `Trigger`，`Property="IsMouseOver"`，`Value="True"`
 </Callout>
+
+## 行为库的 EventTrigger
 
 接下来我们看一看用行为库的 `EventTrigger` 如何实现同样的功能：
 
@@ -84,4 +88,22 @@ title: "EventTrigger"
         </i:Interaction.Triggers>
     </Button>
 </Window>
+```
+
+## NativeAoT 发布需要注意的地方
+
+对于 WPF 来说，这或许并不是一个问题，毕竟 WPF 目前并不支持 NativeAoT 发布。但对于其他一些框架，比如 Win UI 3、Avalonia UI 来说，这确实是一个合理的需求。然而我们的 `EventTrigger` 是基于反射来实现的，这就可能会导致 NativeAoT 发布后，相关的功能失效。
+
+但我们也是有对策的。以 Avalonia UI 为例，它的行为库为我们提供了一个 `RoutedEventTrigger`，它与 `EventTrigger` 的使用方式基本相同，但它不依赖反射。它的使用方法大致如下：
+
+```xml
+<Button Name="Click Me">
+    <Interaction.Behaviors>
+    <RoutedEventTriggerBehavior RoutedEvent="{x:Static Button.ClickEvent}" 
+                                    RoutingStrategies="Bubble"
+                                    SourceInteractive="ChangeProperty">
+        <ChangePropertyAction PropertyName="Background" Value="Red" />
+    </RoutedEventTriggerBehavior>
+    </Interaction.Behaviors>
+</Button>
 ```
