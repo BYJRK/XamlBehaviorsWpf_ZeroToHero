@@ -1,0 +1,53 @@
+---
+title: "DataStateBehavior"
+---
+
+源代码：[DataStateBehavior.cs](https://github.com/microsoft/XamlBehaviorsWpf/blob/main/src/Microsoft.Xaml.Behaviors/Core/DataStateBehavior.cs)
+
+这个行为允许我们根据绑定的值，切换到不同的视觉状态（Visual State）。它有以下几个属性：
+
+- `Binding`：需要绑定的属性，通常是一个布尔值
+- `Value`：可选属性，表示绑定值与之相等时，切换到 `TrueState`，否则切换到 `FalseState`。默认值为 `True`
+- `TrueState`：当绑定的值为 `True` 时，切换到的视觉状态名称
+- `FalseState`：当绑定的值为 `False` 时，切换到的视觉状态名称
+
+下面是一个简单的示例，展示了如何使用 `DataStateBehavior` 来根据一个复选框（CheckBox）的选中状态，改变一个文本块（TextBlock）的前景色：
+
+```xml
+<StackPanel>
+    <CheckBox x:Name="CheckBox" Content="Change Data State" />
+    <TextBlock Text="CheckBox Status">
+        <TextBlock.Foreground>
+            <SolidColorBrush Color="Black" />
+        </TextBlock.Foreground>
+        <i:Interaction.Behaviors>
+            <i:DataStateBehavior Binding="{Binding ElementName=CheckBox, Path=IsChecked}"
+                                 FalseState="Unchecked"
+                                 TrueState="Checked"
+                                 Value="True" />
+        </i:Interaction.Behaviors>
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="CheckStates">
+                <VisualState x:Name="Unchecked">
+                    <Storyboard>
+                        <ColorAnimation Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
+                                        To="Black"
+                                        Duration="0:0:0.3" />
+                    </Storyboard>
+                </VisualState>
+                <VisualState x:Name="Checked">
+                    <Storyboard>
+                        <ColorAnimation Storyboard.TargetProperty="(TextBlock.Foreground).(SolidColorBrush.Color)"
+                                        To="Red"
+                                        Duration="0:0:0.3" />
+                    </Storyboard>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+    </TextBlock>
+</StackPanel>
+```
+
+一般来说，如果需求是修改某个属性的值，并且不需要动画效果，那么通常借助 [`ChangePropertyAction`](../actions/ChangePropertyAction.mdx) 即可。
+
+但如果涉及到比较复杂的动画，那么使用 `DataStateBehavior` 会更合适一些。这样我们就可以将所有的动画都放在视觉状态中进行管理，而不需要在代码中处理各种动画细节。

@@ -1,0 +1,26 @@
+---
+title: "MouseDragElementBehavior"
+---
+
+源代码：[MouseDragElementBehavior.cs](https://github.com/microsoft/XamlBehaviorsWpf/blob/main/src/Microsoft.Xaml.Behaviors/Layout/MouseDragElementBehavior.cs)
+
+顾名思义，这个行为能够让一个控件可以被鼠标按住拖动。它拥有以下几个可用的属性或事件：
+
+1. `X` 和 `Y`：表示当前控件相对于其父容器的偏移位置（初始均为 `NaN`）
+2. `ConstrainToParentBounds`：一个布尔值，表示是否将拖动限制在父容器的边界内（默认值为 `false`）
+3. `DragBegun`、`Dragging` 和 `DragFinished`：分别在拖动开始、拖动过程中和拖动完成时触发的事件，都是 `MouseEventHandler` 类型
+
+它的用法非常简单，只需要将它添加到想要被拖动的控件上即可，比如一个画板上的正方形：
+
+```xml
+<Canvas Width="400" Height="400" Background="LightGray">
+    <Rectangle Width="100" Height="100" Fill="Blue">
+        <i:Interaction.Behaviors>
+            <i:MouseDragElementBehavior ConstrainToParentBounds="True" />
+        </i:Interaction.Behaviors>
+    </Rectangle>
+</Canvas>
+```
+
+被拖动的控件不仅可以在 `Canvas` 上使用，也可以在其他类型的容器中使用，比如 `Grid` 等。因为这个行为并不是通过修改诸如 `Canvas.Top` 等属性的值，而是仅借助 `RenderTransform` 来实现拖动效果的。但这可能也是一个弊端，因为它会导致控件实际位置的计算变得复杂一些。
+
