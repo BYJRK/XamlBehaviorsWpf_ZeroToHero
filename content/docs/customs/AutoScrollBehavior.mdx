@@ -1,0 +1,76 @@
+---
+title: "AutoScrollBehavior"
+---
+
+WPF 中的诸如 `ListBox`、`DataGrid` 等列表控件，默认不会在新增项时自动滚动到底部。为了解决这个问题，我们可以自己写一个 `AutoScrollBehavior`，它会在集合发生变化时，自动将列表滚动到最后一项。
+
+```csharp
+public class AutoScrollBehavior : Behavior<ListBox>
+{
+    protected override void OnAttached()
+    {
+        base.OnAttached();
+        // 关联集合改变事件
+        if (AssociatedObject.Items is INotifyCollectionChanged data)
+        {
+            data.CollectionChanged += OnCollectionChanged;
+        }
+    }
+
+    protected override void OnDetaching()
+    {
+        base.OnDetaching();
+        // 彻底释放，防止内存泄漏
+        if (AssociatedObject.Items is INotifyCollectionChanged data)
+        {
+            data.CollectionChanged -= OnCollectionChanged;
+        }
+    }
+
+    private void OnCollectionChanged(object sender, NotifyCollectionChangedEventArgs e)
+    {
+        if (e.Action == NotifyCollectionChangedAction.Add)
+        {
+            // 获取内部的 ScrollViewer
+            var scrollViewer = GetVisualChild<ScrollViewer>(AssociatedObject);
+            
+            if (scrollViewer != null)
+            {
+                // 关键逻辑：如果当前滚动条已经在底部（或非常接近底部），则自动滚动
+                // 允许 10 个单位的误差，增加鲁棒性
+                bool isAtBottom = scrollViewer.VerticalOffset >= scrollViewer.ScrollableHeight - 10;
+
+                if (isAtBottom)
+                {
+                    AssociatedObject.ScrollIntoView(e.NewItems[0]);
+                }
+            }
+        }
+    }
+
+    // 辅助方法：从视觉树中寻找 ScrollViewer
+    private T GetVisualChild<T>(DependencyObject parent) where T : DependencyObject
+    {
+        for (int i = 0; i < System.Windows.Media.VisualTreeHelper.GetChildrenCount(parent); i++)
+        {
+            var child = System.Windows.Media.VisualTreeHelper.GetChild(parent, i);
+            if (child is T t) return t;
+            var result = GetVisualChild<T>(child);
+            if (result != null) return result;
+        }
+        return null;
+    }
+}
+```
+
+值得注意的是，这里我们添加了一个额外的逻辑：只有当滚动条已经在底部（或非常接近底部）时，才会自动滚动到新添加的项。这样可以避免在用户手动滚动查看旧项时，突然被自动滚动打断。
+
+然后，我们只要将这个行为附加到 `ListBox` 上即可看到效果了：
+
+```xml
+<ListBox x:Name="MyListBox">
+    <i:Interaction.Behaviors>
+        <local:AutoScrollBehavior />
+    </i:Interaction.Behaviors>
+</ListBox>
+```
