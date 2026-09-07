@@ -1,0 +1,121 @@
+---
+title: TimerTrigger
+source: https://github.com/microsoft/XamlBehaviorsWpf/blob/main/src/Microsoft.Xaml.Behaviors/Core/TimerTrigger.cs
+---
+
+这个定时触发器会在某个事件发生后，按设定的间隔重复执行内部的动作。
+
+它容易让人误解的一点是：`TimerTrigger` 并不是一个"自动运行"的定时器。它继承自行为库的 `EventTrigger`，因此需要一个事件来启动。事件触发后才开始计时，之后每隔 `MillisecondsPerTick` 毫秒执行一次动作。由于 `EventTrigger` 默认的事件是 `Loaded`，所以通常它看起来像是一个"自动运行"的定时器。
+
+## 基本用法
+
+下面的代码会在窗口加载后，每秒触发一次命令：
+
+```xml
+<Window x:Class="WpfApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors">
+    <StackPanel>
+        <TextBlock Text="{Binding Now}" FontSize="32" HorizontalAlignment="Center" />
+        <i:Interaction.Triggers>
+            <i:TimerTrigger MillisecondsPerTick="1000">
+                <i:InvokeCommandAction Command="{Binding RefreshTimeCommand}" />
+            </i:TimerTrigger>
+        </i:Interaction.Triggers>
+    </StackPanel>
+</Window>
+```
+
+窗口加载完成后，`TimerTrigger` 每隔 1000 毫秒执行一次 `RefreshTimeCommand`。
+
+## 指定启动事件
+
+既然继承自 `EventTrigger`，就可以用 `EventName` 指定启动定时器的事件，还可以用 `SourceObject` 监听其他元素上的事件。例如：点击"开始"按钮后，每秒汇报一次进度，共汇报 5 次：
+
+```xml
+<Grid>
+    <Button x:Name="startButton" Content="开始" />
+    <i:Interaction.Triggers>
+        <i:TimerTrigger EventName="Click"
+                        SourceObject="{Binding ElementName=startButton}"
+                        MillisecondsPerTick="1000"
+                        TotalTicks="5">
+            <i:InvokeCommandAction Command="{Binding ReportProgressCommand}" />
+        </i:TimerTrigger>
+    </i:Interaction.Triggers>
+</Grid>
+```
+
+启动事件本身不会执行动作——它只是启动定时器，动作只在每次计时到达时执行。
+
+## 核心属性
+
+| 属性 | 类型 | 默认值 | 说明 |
+| --- | --- | --- | --- |
+| `EventName` | `string` | `Loaded` | 继承自 `EventTrigger`，启动定时器的事件 |
+| `MillisecondsPerTick` | `double` | `1000.0` | 两次执行之间的间隔，单位为毫秒 |
+| `TotalTicks` | `int` | `-1` | 动作执行的总次数，小于等于 `0` 表示无限次 |
+
+<Callout type="warn" title="注意">
+    `TotalTicks="0"` 并不是"不执行"，而是与 `-1` 一样表示无限次。希望只执行一次时，应设置为 `1`。
+</Callout>
+
+例如，让提示信息显示 5 秒后自动隐藏：
+
+```xml
+<Border x:Name="tip"
+        Background="#16a34a"
+        Padding="12"
+        CornerRadius="4"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Top">
+    <i:Interaction.Triggers>
+        <i:TimerTrigger MillisecondsPerTick="5000" TotalTicks="1">
+            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed" />
+        </i:TimerTrigger>
+    </i:Interaction.Triggers>
+    <TextBlock Text="保存成功" Foreground="White" />
+</Border>
+```
+
+## 事件再次触发时，计时会重置
+
+如果启动事件再次发生，`TimerTrigger` 会先停止当前定时器、重置已执行次数，然后重新开始计时。利用这一特性可以实现"无操作一段时间后执行动作"：下面的浮层在鼠标移动过后，若连续 3 秒没有新的移动，则自动隐藏：
+
+```xml
+<Grid x:Name="overlay" Background="#80000000">
+    <i:Interaction.Triggers>
+        <i:TimerTrigger EventName="MouseMove"
+                        MillisecondsPerTick="3000"
+                        TotalTicks="1">
+            <i:ChangePropertyAction PropertyName="Visibility" Value="Collapsed" />
+        </i:TimerTrigger>
+    </i:Interaction.Triggers>
+    <!-- 浮层内容 -->
+</Grid>
+```
+
+每次 `MouseMove` 都会重新开始 3 秒的计时，因此只有鼠标停止移动 3 秒后，动作才会执行。
+
+## 实现原理
+
+`TimerTrigger` 继承自 `EventTrigger`，内部持有一个包装了 `DispatcherTimer` 的 `ITickTimer`。事件触发时（`OnEvent`），它会保存事件的 `EventArgs`、将计数清零并启动定时器；定时器每次 `Tick` 时，若 `TotalTicks` 大于 `0` 且已达到该次数，则先停止定时器，然后调用 `InvokeActions` 执行动作——传入的参数是启动事件原本的 `EventArgs`，而不是计时相关的参数。触发器脱离（`OnDetaching`）时，定时器会被停止。
+
+<Callout type="warn" title="注意">
+    `TotalTicks` 为 `N` 时动作恰好执行 `N` 次；定时器的间隔只在启动时读取一次，运行中修改 `MillisecondsPerTick` 不会生效，要等到定时器下一次启动。
+</Callout>
+
+<Callout type="warn" title="注意">
+    底层的 `DispatcherTimer` 运行在 UI 线程上，动作也在 UI 线程执行。不要在动作中执行耗时操作，否则会阻塞界面，计时也会变得不准。耗时任务应交给 `Task.Run` 或后台服务完成，再回到 UI 线程更新界面。
+</Callout>
+
+## 与其他方案的对比
+
+| 方案 | 适合场景 | 特点 |
+| --- | --- | --- |
+| 原生 `Storyboard`（`RepeatBehavior`） | 纯 UI 属性动画 | 无需行为库，但只能驱动动画 |
+| 代码中的 `DispatcherTimer` | 复杂的定时逻辑 | 灵活可控，但需要编写 C# 代码 |
+| `TimerTrigger` | 事件驱动的周期性 UI 动作 | 纯 XAML 声明，可直接组合行为库的 `Action` |
+
+如果只是让某个属性随时间变化（比如透明度渐变），使用原生动画更合适；如果定时逻辑涉及复杂的业务状态，放到视图模型或后台服务中更方便管理。`TimerTrigger` 的价值在于把"事件启动、周期执行"这段逻辑留在 XAML 里，因此更适合较为纯粹的界面功能，比如某个消息在弹出后几秒内自动消失、或者在鼠标停止移动后几秒自动隐藏提示等。
