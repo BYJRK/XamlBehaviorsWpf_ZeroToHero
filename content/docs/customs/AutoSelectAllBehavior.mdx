@@ -1,0 +1,48 @@
+---
+title: AutoSelectAllBehavior
+---
+
+如果希望一个文本框在聚焦后自动全选，可以借助这样的自定义行为实现：
+
+```csharp
+using Microsoft.Xaml.Behaviors;
+using System.Windows;
+using System.Windows.Controls;
+
+public class AutoSelectAllBehavior : Behavior<TextBox>
+{
+    protected override void OnAttached()
+    {
+        base.OnAttached();
+
+        AssociatedObject.GotFocus += AssociatedObject_GotFocus;
+    }
+
+    private void AssociatedObject_GotFocus(object sender, RoutedEventArgs e)
+    {
+        if (AssociatedObject is TextBox box)
+            box.SelectAll();
+    }
+
+    protected override void OnDetaching()
+    {
+        base.OnDetaching();
+
+        AssociatedObject.GotFocus -= AssociatedObject_GotFocus;
+    }
+}
+```
+
+然后只要将它附加到 `TextBox` 上即可：
+
+```xml
+<Window ...
+        xmlns:i="http://schemas.microsoft.com/xaml/behaviors"
+        xmlns:local="clr-namespace:YourNamespace">
+    <TextBox Width="200" Height="30">
+        <i:Interaction.Behaviors>
+            <local:AutoSelectAllBehavior />
+        </i:Interaction.Behaviors>
+    </TextBox>
+</Window>
+```

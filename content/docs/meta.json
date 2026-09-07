@@ -4,6 +4,7 @@
         "intro",
         "triggers",
         "actions",
-        "behaviors"
+        "behaviors",
+        "customs"
     ]
 }

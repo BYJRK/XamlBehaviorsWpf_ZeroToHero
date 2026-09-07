@@ -10,7 +10,7 @@ public class AutoScrollBehavior : Behavior<ListBox>
     protected override void OnAttached()
     {
         base.OnAttached();
-        // 关联集合改变事件
+
         if (AssociatedObject.Items is INotifyCollectionChanged data)
         {
             data.CollectionChanged += OnCollectionChanged;
@@ -20,7 +20,7 @@ public class AutoScrollBehavior : Behavior<ListBox>
     protected override void OnDetaching()
     {
         base.OnDetaching();
-        // 彻底释放，防止内存泄漏
+
         if (AssociatedObject.Items is INotifyCollectionChanged data)
         {
             data.CollectionChanged -= OnCollectionChanged;
@@ -33,7 +33,7 @@ public class AutoScrollBehavior : Behavior<ListBox>
         {
             // 获取内部的 ScrollViewer
             var scrollViewer = GetVisualChild<ScrollViewer>(AssociatedObject);
-            
+
             if (scrollViewer != null)
             {
                 // 关键逻辑：如果当前滚动条已经在底部（或非常接近底部），则自动滚动
