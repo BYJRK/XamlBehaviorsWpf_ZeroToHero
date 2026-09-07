@@ -1,0 +1,33 @@
+content/docs/triggers/index.mdx
+  s_61973d3f16e32b::t_ece9d2f09a81a0 13
+content/docs/triggers/TimerTrigger.mdx
+  s_61973d3f16e32b::t_226d254900353d 1-120
+  s_61973d3f16e32b::t_70d4f79215a40a 121
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.6.2",
+  "base_commit_sha": "43e0d80bab45b1f48d59b2a976c6804500ca2c22",
+  "prompts": {},
+  "sessions": {
+    "s_61973d3f16e32b": {
+      "agent_id": {
+        "tool": "trae",
+        "id": "01a07b05-bede-7c63-81f5-3993ba8c7417",
+        "model": "GLM-5.3"
+      },
+      "human_author": "BYJRK <suomikoto@outlook.com>",
+      "custom_attributes": {
+        "operation_id": "call_676173d32e8f49bfa7d235c3",
+        "client_type": "cli",
+        "tool_use_id": "call_676173d32e8f49bfa7d235c3",
+        "runtime_client": "traex-cli",
+        "tool_name": "Edit",
+        "source_scene": "agent",
+        "edit_kind": "file_edit",
+        "session_id": "01a07b05-bede-7c63-81f5-3993ba8c7417",
+        "external_session_id": "01a07b05-bede-7c63-81f5-3993ba8c7417"
+      }
+    }
+  }
+}
