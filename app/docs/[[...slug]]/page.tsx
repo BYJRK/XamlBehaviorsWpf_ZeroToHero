@@ -8,6 +8,7 @@ import {
 import { notFound } from 'next/navigation';
 import { createRelativeLink } from 'fumadocs-ui/mdx';
 import { getMDXComponents } from '@/mdx-components';
+import { SourceLink } from '@/components/source-link';
 
 export default async function Page(props: {
   params: Promise<{ slug?: string[] }>;
@@ -23,6 +24,7 @@ export default async function Page(props: {
       <DocsTitle>{page.data.title}</DocsTitle>
       <DocsDescription>{page.data.description}</DocsDescription>
       <DocsBody>
+        {page.data.source ? <SourceLink href={page.data.source} /> : null}
         <MDXContent
           components={getMDXComponents({
             // this allows you to link to other pages with relative file paths
