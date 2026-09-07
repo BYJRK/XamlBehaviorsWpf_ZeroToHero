@@ -1,0 +1,66 @@
+---
+title: "PropertyChangedTrigger"
+---
+
+源代码：[PropertyChangedTrigger.cs](https://github.com/microsoft/XamlBehaviorsWpf/blob/main/src/Microsoft.Xaml.Behaviors/Core/PropertyChangedTrigger.cs)
+
+这个触发器可以通过绑定某个属性（可以是来自视图模型，或某个控件的依赖属性）来监听它的变化，并在变化时执行一个或多个动作。它的典型用途是：当某个属性发生变化时，执行刷新、同步或其他逻辑。
+
+## 基本用法
+
+假设当前数据上下文中包含 `IsDirty` 和 `SaveCommand`：当 `IsDirty` 的值发生变化时，触发器会执行 `SaveCommand`。
+
+```xml
+<i:PropertyChangedTrigger Binding="{Binding IsDirty}">
+    <i:InvokeCommandAction Command="{Binding SaveCommand}" />
+</i:PropertyChangedTrigger>
+```
+
+`Binding` 支持 WPF 的 `Binding` 表达式。因此也可以绑定到嵌套属性、指定源对象或设置转换器：
+
+```xml
+<i:PropertyChangedTrigger Binding="{Binding Path=CurrentUser.DisplayName}">
+    <i:CallMethodAction TargetObject="{Binding ElementName=window}"
+                        MethodName="RefreshUserName" />
+</i:PropertyChangedTrigger>
+```
+
+还可以绑定到某个控件的依赖属性上：
+
+```xml
+<CheckBox x:Name="checkBox" Content="Enable Feature" />
+<TextBlock>
+    <i:Interaction.Triggers>
+        <i:PropertyChangedTrigger Binding="{Binding IsChecked, ElementName=checkBox}">
+            <i:ChangePropertyAction TargetObject="{Binding ElementName=textBlock}"
+                                    PropertyName="Text"
+                                    Value="Feature Enabled" />
+        </i:PropertyChangedTrigger>
+    </i:Interaction.Triggers>
+</TextBlock>
+```
+
+## 与 `DataTrigger` 的区别
+
+`PropertyChangedTrigger` 和行为库的 `DataTrigger` 都可以通过 `Binding` 监听数据，但两者关注的条件不同：
+
+- `PropertyChangedTrigger` 关注的是“属性值发生变化”，只要绑定的属性值发生了变化，就会触发动作。它不关心新值是什么，也不关心旧值是什么，只要有变化就会触发。
+- `DataTrigger` 关注的是“属性值满足条件”，只有当绑定的属性值满足指定的条件时，才会触发动作。它关心新值是否满足条件，但不关心旧值是什么。
+
+例如，只要 `IsDirty` 发生变化就执行动作，可以使用 `PropertyChangedTrigger`：
+
+```xml
+<i:PropertyChangedTrigger Binding="{Binding IsDirty}">
+    <i:InvokeCommandAction Command="{Binding StateChangedCommand}" />
+</i:PropertyChangedTrigger>
+```
+
+而如果只希望在 `IsDirty` 为 `True` 时执行动作，则应使用 `DataTrigger`：
+
+```xml
+<i:DataTrigger Binding="{Binding IsDirty}" Value="True">
+    <i:InvokeCommandAction Command="{Binding SaveCommand}" />
+</i:DataTrigger>
+```
+
+简单来说：需要“属性发生变化就执行”时使用 `PropertyChangedTrigger`；需要“属性值满足条件时执行”时使用 `DataTrigger`。
