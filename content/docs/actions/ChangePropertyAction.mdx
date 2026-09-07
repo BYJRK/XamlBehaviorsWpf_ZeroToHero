@@ -1,5 +1,6 @@
 ---
 title: "ChangePropertyAction"
+source: https://github.com/microsoft/XamlBehaviorsWpf/blob/main/src/Microsoft.Xaml.Behaviors/Core/ChangePropertyAction.cs
 ---
 
 这是一个可以修改属性值的动作。当生效后，它会在后台借助反射的方式找到想要修改的属性，并为它赋新值。要操控的对象可以是一个控件，也可以是一个视图模型。
@@ -72,7 +73,7 @@ window.WindowState = WindowState.Minimized;
     <CheckBox x:Name="check" />
 
     <Button Content="Click Me"
-            Visibility="{Binding ElementName=check, 
+            Visibility="{Binding ElementName=check,
                                  Path=IsChecked,
                                  Converter={StaticResource BooleanToVisibilityConverter}}" />
     ```

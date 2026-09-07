@@ -1,8 +1,7 @@
 ---
 title: "CallMethodAction"
+source: "https://github.com/microsoft/XamlBehaviorsWpf/blob/main/src/Microsoft.Xaml.Behaviors/Core/CallMethodAction.cs"
 ---
-
-源代码：[CallMethodAction.cs](https://github.com/microsoft/XamlBehaviorsWpf/blob/main/src/Microsoft.Xaml.Behaviors/Core/CallMethodAction.cs)
 
 
 这是一个相当简单易用的动作，它允许我们在事件触发器中调用一个方法。这个方法可以是任意一个对象的方法，比如 `Window` 的 `Close`，或视图模型（ViewModel）中的方法（但通常不推荐这样，而是建议使用 `InvokeCommandAction` 来绑定 VM 上的命令）。

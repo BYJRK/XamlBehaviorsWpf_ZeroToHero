@@ -1,5 +1,6 @@
 ---
 title: "InvokeCommandAction"
+source: https://github.com/microsoft/XamlBehaviorsWpf/blob/main/src/Microsoft.Xaml.Behaviors/InvokeCommandAction.cs
 ---
 
 顾名思义，这个动作的效果就是执行一个命令（`ICommand`）。乍一看似乎没有多大的必要，因为诸如 `Button` 之类的控件本身就可以绑定 `Command` 属性。但是在实际的开发中，我们经常需要去绑定一些事件，比如 `Loaded`、`MouseEnter`、`SelectionChanged` 等等。这些事件所属的控件并没有提供一个让我们直接去绑定的类似 `Command` 的属性。这时候，`InvokeCommandAction` 就可以派上用场了。
@@ -34,7 +35,7 @@ public ICommand LoadDataCommand { get; }
 <Window>
     <i:Interaction.Triggers>
         <i:EventTrigger EventName="KeyDown">
-            <i:InvokeCommandAction Command="{Binding KeyDownCommand}" 
+            <i:InvokeCommandAction Command="{Binding KeyDownCommand}"
                                    PassEventArgsToCommand="True" />
         </i:EventTrigger>
     </i:Interaction.Triggers>
